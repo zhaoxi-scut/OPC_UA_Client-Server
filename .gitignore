@@ -1,0 +1,15 @@
+# Configuration files
+.vscode
+
+# Compiling files
+*build
+
+# Image files
+*.png
+*.jpg
+*.jpeg
+
+# Video files
+*.mp4
+*.mov
+*.avi
