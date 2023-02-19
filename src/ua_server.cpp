@@ -12,10 +12,6 @@
 #include <iostream>
 #include <thread>
 
-#ifndef UA_ENABLE_AMALGAMATION
-#include <open62541/plugin/log_stdout.h>
-#endif //! UA_ENABLE_AMALGAMATION
-
 #include <opencv2/core.hpp>
 
 #include "asmpro/opcua_cs.hpp"

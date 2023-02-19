@@ -5,7 +5,7 @@
  * @version 1.0
  * @date 2022-09-17
  *
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  *
  */
 

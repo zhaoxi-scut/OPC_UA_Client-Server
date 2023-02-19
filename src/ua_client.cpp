@@ -11,10 +11,6 @@
 
 #include <iostream>
 
-#ifndef UA_ENABLE_AMALGAMATION
-#include <open62541/plugin/log_stdout.h>
-#endif //! UA_ENABLE_AMALGAMATION
-
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 

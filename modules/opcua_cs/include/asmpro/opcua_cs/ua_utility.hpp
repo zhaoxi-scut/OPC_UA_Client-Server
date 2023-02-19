@@ -5,7 +5,7 @@
  * @version 1.0
  * @date 2022-09-16
  *
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  *
  */
 
@@ -13,11 +13,7 @@
 
 #include <string>
 
-#ifdef UA_ENABLE_AMALGAMATION
 #include <open62541.h>
-#else
-#include <open62541/util.h>
-#endif //! UA_ENABLE_AMALGAMATION
 
 //! @addtogroup opcua_cs
 //! @{

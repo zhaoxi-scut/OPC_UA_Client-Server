@@ -5,18 +5,13 @@
  * @version 1.0
  * @date 2022-09-16
  *
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  *
  */
 
 #pragma once
 
-#include <cassert>
 #include <unordered_set>
-
-#ifndef UA_ENABLE_AMALGAMATION
-#include <open62541/server_config_default.h>
-#endif //! UA_ENABLE_AMALGAMATION
 
 #include "argument.hpp"
 #include "object.hpp"
@@ -52,21 +47,34 @@ class Server final
     static UA_Boolean __is_init; //!< 服务器初始化状态
     static UA_Boolean __running; //!< 服务器运行状态
 
-#define SERVER_RUNNING_ASSERT()                                   \
-    do                                                            \
-    {                                                             \
-        if (__running)                                            \
-            __assert_fail("\033[31m[Server is running]\033[0m",   \
-                          __FILE__, __LINE__, __ASSERT_FUNCTION); \
+#ifndef NDEBUG
+#define SERVER_RUNNING_ASSERT()                                                         \
+    do                                                                                  \
+    {                                                                                   \
+        if (__running)                                                                  \
+        {                                                                               \
+            printf("Assertion: \033[31mServer is running.\033[0m On line %u of \"%s\"", \
+                   __LINE__, __FILE__);                                                 \
+            abort();                                                                    \
+        }                                                                               \
     } while (false)
 
-#define SERVER_INIT_ASSERT()                                           \
-    do                                                                 \
-    {                                                                  \
-        if (!__is_init)                                                \
-            __assert_fail("\033[31m[Server isn't initialized]\033[0m", \
-                          __FILE__, __LINE__, __ASSERT_FUNCTION);      \
+#define SERVER_INIT_ASSERT()                                                                   \
+    do                                                                                         \
+    {                                                                                          \
+        if (!__is_init)                                                                        \
+        {                                                                                      \
+            printf("Assertion: \033[31mServer isn't initialized.\033[0m On line %u of \"%s\"", \
+                   __LINE__, __FILE__);                                                        \
+            abort();                                                                           \
+        }                                                                                      \
     } while (false)
+
+#else
+#define SERVER_RUNNING_ASSERT() void(0)
+#define SERVER_INIT_ASSERT() void(0)
+
+#endif //! NDEBUG
 
 public:
     Server() = default;

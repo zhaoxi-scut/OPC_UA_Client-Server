@@ -5,18 +5,12 @@
  * @version 1.0
  * @date 2022-09-15
  *
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  *
  */
 
 #include <thread>
 #include <string>
-
-#ifndef UA_ENABLE_AMALGAMATION
-#include <open62541/plugin/accesscontrol_default.h>
-#include <open62541/plugin/log_stdout.h>
-#include <open62541/client_subscriptions.h>
-#endif //! UA_ENABLE_AMALGAMATION
 
 #include "asmpro/opcua_cs/server.hpp"
 

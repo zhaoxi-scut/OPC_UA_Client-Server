@@ -5,20 +5,13 @@
  * @version 1.0
  * @date 2022-09-17
  * 
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  * 
  */
 
 #pragma once
 
-/**
-@defgroup opcua_cs Cient / Server in OPC UA
-@{
-    @defgroup opcua_cs_object Object and the type of object in OPC UA
-    @defgroup opcua_cs_variable Variable and the type of variable in OPC UA
-    @defgroup opcua_cs_arguments Arguments in OPC UA
-@}
- */
+//! @defgroup opcua_cs Cient / Server in OPC UA
 
 #include "opcua_cs/client.hpp"
 #include "opcua_cs/server.hpp"

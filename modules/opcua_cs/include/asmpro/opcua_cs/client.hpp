@@ -5,15 +5,11 @@
  * @version 1.0
  * @date 2022-09-22
  *
- * @copyright Copyright SCUT RobotLab(c) 2022
+ * @copyright Copyright (c) 2023, zhaoxi
  *
  */
 
 #pragma once
-
-#ifndef UA_ENABLE_AMALGAMATION
-#include <open62541/client_subscriptions.h>
-#endif //! UA_ENABLE_AMALGAMATION
 
 #include "argument.hpp"
 #include "object.hpp"
