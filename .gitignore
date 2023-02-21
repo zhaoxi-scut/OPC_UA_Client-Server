@@ -1,8 +1,11 @@
 # Configuration files
 .vscode
+.vs
+*.json
 
 # Compiling files
 *build
+out
 
 # Image files
 *.png

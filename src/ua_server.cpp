@@ -41,6 +41,36 @@ UA_StatusCode updateStatus(UA_Server *server, const UA_NodeId *sessionId, void *
                            void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                            const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 3)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Wrong inputSize of the method: updateStatus");
+        return UA_STATUSCODE_BAD;
+    }
+    // DeviceName
+    UA_NodeId device_name_id = Server::findNodeId(*objectId, 1, "DeviceName");
+    if (UA_NodeId_isNull(&device_name_id))
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Unknown node id (name: DeviceName)");
+        return UA_STATUSCODE_BADNODEIDUNKNOWN;
+    }
+    UA_Server_writeValue(server, device_name_id, input[0]);
+    // StatusMessage
+    UA_NodeId status_message_id = Server::findNodeId(*objectId, 1, "StatusMessage");
+    if (UA_NodeId_isNull(&status_message_id))
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Unknown node id (name: StatusMessage)");
+        return UA_STATUSCODE_BADNODEIDUNKNOWN;
+    }
+    UA_Server_writeValue(server, status_message_id, input[1]);
+    // GrabImage
+    UA_NodeId grab_image_id = Server::findNodeId(*objectId, 1, "GrabImage");
+    if (UA_NodeId_isNull(&grab_image_id))
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Unknown node id (name: GrabImage)");
+        return UA_STATUSCODE_BADNODEIDUNKNOWN;
+    }
+    UA_Server_writeValue(server, grab_image_id, input[2]);
+
     return UA_STATUSCODE_GOOD;
 }
 
@@ -96,14 +126,14 @@ int main(int argc, char *argv[])
     // ########################## Device Status ##########################
     // ObjectType
     ObjectType device_status_type;
-    device_status_type.add("DeviceNumber", UA_UInt16(0));
+    device_status_type.add("DeviceName", "Null");
     device_status_type.add("StatusMessage", "Normal Status");
     device_status_type.add("GrabImage", image_var);
     UA_NodeId device_status_type_id = Server::addObjectTypeNode("DeviceStatusType", "Type of the devices status",
                                                                 device_status_type);
     // Method
     vector<UA_UInt32> dimension = {480, 640, 3};
-    vector<Argument> status_inputs = {Argument("DeviceNumber", "The S/N or other number of the device", UA_TYPES_UINT16),
+    vector<Argument> status_inputs = {Argument("DeviceName", "The S/N or other name of the device", UA_TYPES_STRING),
                                       Argument("StatusMessgae", "The status message of the device", UA_TYPES_STRING),
                                       Argument("GrabImage", "Image grabbed from the device", UA_TYPES_BYTE, dimension)};
     Server::addMethodNode("UpdateStatus", "Update the status of the device", updateStatus,
@@ -120,8 +150,8 @@ int main(int argc, char *argv[])
                                   tmp, device_status_type_id, vision_server_id);
     }
 
-    thread t1(changeImg);
-    t1.detach();
+    // thread t1(changeImg);
+    // t1.detach();
     // ############################### Run ###############################
     Server::run();
 }
