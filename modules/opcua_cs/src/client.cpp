@@ -61,7 +61,7 @@ UA_NodeId Client::findNodeId(const UA_NodeId &origin_id, const UA_UInt32 target_
 
 UA_Boolean Client::writeVariable(const UA_NodeId &node_id, const Variable &data)
 {
-    auto status = UA_Client_writeValueAttribute(__client, node_id, &data.getVariant());
+    auto status = UA_Client_writeValueAttribute(__client, node_id, &data.get());
     if (status != UA_STATUSCODE_GOOD)
     {
         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "%s", UA_StatusCode_name(status));
@@ -72,26 +72,16 @@ UA_Boolean Client::writeVariable(const UA_NodeId &node_id, const Variable &data)
 
 Variable Client::readVariable(const UA_NodeId &node_id)
 {
-    UA_Variant variant;
-    UA_Variant_init(&variant);
-    UA_StatusCode retval = UA_Client_readValueAttribute(__client, node_id, &variant);
+    UA_Variant val;
+    UA_Variant_init(&val);
+    UA_StatusCode retval = UA_Client_readValueAttribute(__client, node_id, &val);
     if (retval != UA_STATUSCODE_GOOD)
     {
         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "%s", UA_StatusCode_name(retval));
         return Variable();
     }
     //!< Variant information
-    void *data = variant.data;
-    UA_UInt32 ua_types = variant.type->typeKind;
-    vector<UA_UInt32> dimension_array;
-    size_t array_size = variant.arrayDimensionsSize;
-    if (array_size != 0)
-    {
-        dimension_array.reserve(array_size);
-        for (size_t i = 0; i < array_size; ++i)
-            dimension_array.emplace_back(variant.arrayDimensions[i]);
-    }
-    return Variable(data, ua_types, READ | WRITE, dimension_array);
+    return Variable(val.data, val.type, val.arrayLength);
 }
 
 UA_Boolean Client::call(const UA_NodeId &node_id, const std::vector<Variable> &inputs,
@@ -101,7 +91,7 @@ UA_Boolean Client::call(const UA_NodeId &node_id, const std::vector<Variable> &i
     vector<UA_Variant> input_variants;
     input_variants.reserve(inputs.size());
     for (const auto &input : inputs)
-        input_variants.push_back(input.getVariant());
+        input_variants.push_back(input.get());
 
     size_t output_size;
     UA_Variant *output_variants;
@@ -114,20 +104,7 @@ UA_Boolean Client::call(const UA_NodeId &node_id, const std::vector<Variable> &i
     //!< Process the output variants
     outputs.reserve(output_size);
     for (size_t i = 0; i < output_size; ++i)
-    {
-        //!< Variant information
-        void *data = output_variants[i].data;
-        UA_UInt32 ua_types = output_variants[i].type->typeKind;
-        vector<UA_UInt32> dimension_array;
-        size_t array_size = output_variants[i].arrayDimensionsSize;
-        if (array_size != 0)
-        {
-            dimension_array.reserve(array_size);
-            for (size_t i = 0; i < array_size; ++i)
-                dimension_array.emplace_back(output_variants[i].arrayDimensions[i]);
-        }
-        outputs.emplace_back(data, ua_types, READ | WRITE, dimension_array);
-    }
+        outputs.emplace_back(output_variants[i].data, output_variants[i].type, output_variants[i].arrayLength);
     return UA_TRUE;
 }
 

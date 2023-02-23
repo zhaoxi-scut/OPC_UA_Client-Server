@@ -79,12 +79,11 @@ public:
      */
     inline void add(const std::string &browse_name, const Variable &variable)
     {
-        if (__name_var.find(browse_name) != __name_var.end())
-            __name_var[browse_name] = variable;
+        __name_var[browse_name] = variable;
     }
 
     //!< 获取浏览信息名及对应的变量数据
-    inline const auto &getNameVar() const { return __name_var; }
+    inline const auto &get() const { return __name_var; }
 };
 
 /**

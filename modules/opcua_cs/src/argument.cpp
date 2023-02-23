@@ -14,28 +14,22 @@
 using namespace std;
 using namespace ua;
 
-/**
- * @brief Construct a new Argument object
- *
- * @param name Name of the argument
- * @param description Description of the argument
- * @param ua_types UA_TYPES_xxx
- * @param dimension_array Dimension array of variant
- */
-Argument::Argument(string name, string description, int ua_types,
-                   const vector<UA_UInt32> &dimension_array)
+Argument::Argument(string name, string description, const UA_DataType *type, UA_UInt32 size) : __size(size)
 {
     UA_Argument_init(&__argument);
     __argument.name = UA_STRING(to_c(name));
     __argument.description = UA_LOCALIZEDTEXT(en_US, to_c(description));
-    __argument.dataType = UA_TYPES[ua_types].typeId;
-    __dim_arr = dimension_array;
-    if (__dim_arr.empty())
+    __argument.dataType = type->typeId;
+    if (__size == 0)
+    {
         __argument.valueRank = UA_VALUERANK_SCALAR;
+        __argument.arrayDimensionsSize = 0;
+        __argument.arrayDimensions = nullptr;
+    }
     else
     {
-        __argument.valueRank = static_cast<UA_Int32>(__dim_arr.size());
-        __argument.arrayDimensionsSize = __dim_arr.size();
-        __argument.arrayDimensions = __dim_arr.data();
+        __argument.valueRank = 1;
+        __argument.arrayDimensionsSize = 1;
+        __argument.arrayDimensions = &__size;
     }
 }

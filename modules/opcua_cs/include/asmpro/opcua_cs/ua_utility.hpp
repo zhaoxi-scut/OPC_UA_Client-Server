@@ -25,26 +25,12 @@ inline char *en_US = const_cast<char *>("en-US");
 inline char *zh_CN = const_cast<char *>("zh-CN");
 
 /**
- * @brief Chaneg "std::string" to "char *"
+ * @brief Change "std::string" to "char *"
  * 
  * @param str String type of "std::string"
  * @return String type of "char *"
  */
 inline char *to_c(const std::string &str) { return const_cast<char *>(str.c_str()); }
-
-/**
- * @brief Access level redefine
- */
-enum AccessLevel : UA_Byte
-{
-    READ = UA_ACCESSLEVELMASK_READ,                     //!< UA_ACCESSLEVELMASK_READ
-    WRITE = UA_ACCESSLEVELMASK_WRITE,                   //!< UA_ACCESSLEVELMASK_WRITE
-    HISTORYREAD = UA_ACCESSLEVELMASK_HISTORYREAD,       //!< UA_ACCESSLEVELMASK_HISTORYREAD
-    HISTORYWRITE = UA_ACCESSLEVELMASK_HISTORYWRITE,     //!< UA_ACCESSLEVELMASK_HISTORYWRITE
-    SEMANTICCHANGE = UA_ACCESSLEVELMASK_SEMANTICCHANGE, //!< UA_ACCESSLEVELMASK_SEMANTICCHANGE
-    STATUSWRITE = UA_ACCESSLEVELMASK_STATUSWRITE,       //!< UA_ACCESSLEVELMASK_STATUSWRITE
-    TIMESTAMPWRITE = UA_ACCESSLEVELMASK_TIMESTAMPWRITE  //!< UA_ACCESSLEVELMASK_TIMESTAMPWRITE
-};
 
 //! Type to UA_DataType
 template <typename _Tp>

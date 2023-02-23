@@ -71,23 +71,23 @@ UA_VariableAttributes Server::configVariableAttribute(const string &browse_name,
                                                       const string &description, const Variable &data)
 {
     UA_VariableAttributes var_attr = UA_VariableAttributes_default;
-    UA_Variant value = data.getVariant();
+    const UA_Variant &value = data.get();
     UA_Variant_copy(&value, &var_attr.value);
     var_attr.dataType = value.type->typeId;
-    if (data.getDimension() == 0)
+    if (value.arrayLength == 0)
         var_attr.valueRank = UA_VALUERANK_SCALAR;
     else
     {
         var_attr.arrayDimensions = value.arrayDimensions;
         var_attr.arrayDimensionsSize = value.arrayDimensionsSize;
-        var_attr.valueRank = data.getDimension();
+        var_attr.valueRank = 1;
     }
 
     var_attr.description = UA_LOCALIZEDTEXT(en_US,
                                             to_c(browse_name));
     var_attr.displayName = UA_LOCALIZEDTEXT(en_US,
                                             to_c(description));
-    var_attr.accessLevel = data.getAccess();
+    var_attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
     return var_attr;
 }
 
@@ -132,10 +132,7 @@ UA_NodeId Server::addVariableNode(const string &browse_name, const string &descr
 UA_Boolean Server::writeVariable(const UA_NodeId &node_id, const Variable &data)
 {
     SERVER_INIT_ASSERT();
-    UA_Variant variant;
-    UA_Variant_init(&variant);
-    UA_Variant_copy(&data.getVariant(), &variant);
-    auto status = UA_Server_writeValue(__server, node_id, data.getVariant());
+    auto status = UA_Server_writeValue(__server, node_id, data.get());
     if (status != UA_STATUSCODE_GOOD)
     {
         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
@@ -164,7 +161,7 @@ UA_Boolean Server::writeProperty(const UA_NodeId &node_id, const std::string &ta
     SERVER_INIT_ASSERT();
     auto retval = UA_Server_writeObjectProperty(__server, node_id,
                                                 UA_QUALIFIEDNAME(0, to_c(target_name)),
-                                                data.getVariant());
+                                                data.get());
     if (retval != UA_STATUSCODE_GOOD)
     {
         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
@@ -191,8 +188,8 @@ UA_Boolean Server::triggerEvent(const UA_NodeId &node_id, const UA_NodeId &origi
 Variable Server::readVariable(const UA_NodeId &node_id)
 {
     SERVER_INIT_ASSERT();
-    UA_Variant variant;
-    auto status = UA_Server_readValue(__server, node_id, &variant);
+    UA_Variant val;
+    auto status = UA_Server_readValue(__server, node_id, &val);
     if (status != UA_STATUSCODE_GOOD)
     {
         UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
@@ -200,17 +197,7 @@ Variable Server::readVariable(const UA_NodeId &node_id)
         return Variable();
     }
     // Variant information
-    void *data = variant.data;
-    UA_UInt32 ua_types = variant.type->typeKind;
-    vector<UA_UInt32> dimension_array;
-    size_t array_size = variant.arrayDimensionsSize;
-    if (array_size != 0)
-    {
-        dimension_array.reserve(array_size);
-        for (size_t i = 0; i < array_size; ++i)
-            dimension_array.emplace_back(variant.arrayDimensions[i]);
-    }
-    return Variable(data, ua_types, READ | WRITE, dimension_array);
+    return Variable(val.data, val.type, val.arrayLength);
 }
 
 void Server::addVariableNodeValueCallBack(const UA_NodeId &node_id, ValueCallBackRead before_read,
@@ -272,16 +259,16 @@ UA_NodeId Server::addVariableTypeNode(const string &browse_name, const string &d
 {
     SERVER_INIT_ASSERT();
     UA_VariableTypeAttributes type_attr = UA_VariableTypeAttributes_default;
-    UA_Variant value = data.getDefault();
-    UA_Variant_copy(&value, &type_attr.value);
-    type_attr.dataType = value.type->typeId;
-    if (data.getDimension() == 0)
+    const UA_Variant &val = data.get();
+    UA_Variant_copy(&val, &type_attr.value);
+    type_attr.dataType = val.type->typeId;
+    if (val.arrayLength == 0)
         type_attr.valueRank = UA_VALUERANK_SCALAR;
     else
     {
-        type_attr.arrayDimensions = value.arrayDimensions;
-        type_attr.arrayDimensionsSize = value.arrayDimensionsSize;
-        type_attr.valueRank = data.getDimension();
+        type_attr.arrayDimensions = val.arrayDimensions;
+        type_attr.arrayDimensionsSize = val.arrayDimensionsSize;
+        type_attr.valueRank = 1;
     }
     type_attr.displayName = UA_LOCALIZEDTEXT(en_US, to_c(browse_name));
     type_attr.description = UA_LOCALIZEDTEXT(en_US, to_c(description));
@@ -319,7 +306,7 @@ UA_NodeId Server::addObjectNode(const string &browse_name, const string &descrip
                      "Function addObject: %s", UA_StatusCode_name(retval));
         return UA_NODEID_NULL;
     }
-    const auto &name_vars = data.getNameVar();
+    const auto &name_vars = data.get();
     for (const auto &[name, variable] : name_vars)
     {
         auto var_node_id = findNodeId(node_id, 1, name);
@@ -361,9 +348,9 @@ UA_NodeId Server::addObjectTypeNode(const string &browse_name, const string &des
         //!< Add variable attributes
         UA_VariableAttributes attr = UA_VariableAttributes_default;
         attr.displayName = UA_LOCALIZEDTEXT(en_US, to_c(name));
-        attr.accessLevel = variable.getAccess();
-        UA_Variant value = variable.getVariant();
-        UA_Variant_copy(&value, &attr.value);
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+        UA_Variant val = variable.get();
+        UA_Variant_copy(&val, &attr.value);
         UA_NodeId var_node_id;
         retval = UA_Server_addVariableNode(__server, UA_NODEID_NULL, node_id,
                                            UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
@@ -415,8 +402,8 @@ UA_NodeId Server::addEventTypeNode(const string &browse_name, const string &desc
         //!< Add variable attributes
         UA_VariableAttributes attr = UA_VariableAttributes_default;
         attr.displayName = UA_LOCALIZEDTEXT(en_US, to_c(name));
-        attr.accessLevel = variable.getAccess();
-        UA_Variant value = variable.getVariant();
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+        UA_Variant value = variable.get();
         UA_Variant_copy(&value, &attr.value);
         UA_NodeId var_node_id;
         retval = UA_Server_addVariableNode(__server, UA_NODEID_NULL, event_type_node_id,
@@ -458,11 +445,11 @@ UA_NodeId Server::addMethodNode(const string &browse_name, const string &descrip
     vector<UA_Argument> inputs;
     inputs.reserve(input_args.size());
     for (auto &inputArg : input_args)
-        inputs.emplace_back(inputArg.getArgument());
+        inputs.emplace_back(inputArg.get());
     vector<UA_Argument> outputs;
     outputs.reserve(output_args.size());
     for (auto &outputArg : output_args)
-        outputs.emplace_back(outputArg.getArgument());
+        outputs.emplace_back(outputArg.get());
     //!< Add method node
     UA_NodeId node_id = UA_NODEID_NULL;
     auto retval = UA_Server_addMethodNode(__server, UA_NODEID_NULL, parent_id,

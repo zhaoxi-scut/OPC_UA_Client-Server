@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <csignal>
 #include <thread>
 
 #include <opencv2/core.hpp>
@@ -85,7 +86,7 @@ void changeImg()
     {
         this_thread::sleep_for(chrono::milliseconds(500));
         Mat img(Size(640, 480), CV_8UC3, Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)));
-        Variable variable = convertImg(img);
+        Variable variable(img.data, &UA_TYPES[UA_TYPES_BYTE], img.cols * img.rows * img.channels());
         UA_NodeId node_id = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
         node_id = Server::findNodeId(node_id, 1, "VisionServer");
         node_id = Server::findNodeId(node_id, 1, "DeviceStatus[1]");
@@ -103,8 +104,8 @@ int main(int argc, char *argv[])
     Server::init();
     // ########################### Image  Type ###########################
     // VariableType
-    Variable image_var = convertImg(Mat(Size(640, 480), CV_8UC3, Scalar(0, 0, 0)));
-    VariableType image_type(image_var);
+    Mat image(Size(640, 480), CV_8UC3, Scalar(0, 0, 0));
+    VariableType image_type(image.data, &UA_TYPES[UA_TYPES_BYTE], image.cols * image.rows * image.channels());
     Server::addVariableTypeNode("ImageType", "Type of the image consisting of BGR888 and Mono8", image_type);
 
     // ########################## Vision Server ##########################
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
     UA_NodeId vision_server_type_id = Server::addObjectTypeNode("VisionServerType", "Type of the vision server",
                                                                 vision_server_type);
     // Method
-    vector<Argument> server_inputs = {Argument("Index", "The index of the specific device", UA_TYPES_UINT16)};
+    vector<Argument> server_inputs = {Argument("Index", "The index of the specific device", &UA_TYPES[UA_TYPES_UINT16])};
     Server::addMethodNode("VisionTrigger", "Trigger the specific device to process the vision program",
                           visionTrigger, server_inputs, null_args, vision_server_type_id);
     Server::addMethodNode("ReloadConfig", "Reload the specific device on the production line",
@@ -128,14 +129,16 @@ int main(int argc, char *argv[])
     ObjectType device_status_type;
     device_status_type.add("DeviceName", "Null");
     device_status_type.add("StatusMessage", "Normal Status");
-    device_status_type.add("GrabImage", image_var);
+    device_status_type.add("GrabImage", image_type.get());
     UA_NodeId device_status_type_id = Server::addObjectTypeNode("DeviceStatusType", "Type of the devices status",
                                                                 device_status_type);
     // Method
-    vector<UA_UInt32> dimension = {480, 640, 3};
-    vector<Argument> status_inputs = {Argument("DeviceName", "The S/N or other name of the device", UA_TYPES_STRING),
-                                      Argument("StatusMessgae", "The status message of the device", UA_TYPES_STRING),
-                                      Argument("GrabImage", "Image grabbed from the device", UA_TYPES_BYTE, dimension)};
+    vector<Argument> status_inputs = {Argument("DeviceName", "The S/N or other name of the device",
+                                               &UA_TYPES[UA_TYPES_STRING]),
+                                      Argument("StatusMessgae", "The status message of the device",
+                                               &UA_TYPES[UA_TYPES_STRING]),
+                                      Argument("GrabImage", "Image grabbed from the device",
+                                               &UA_TYPES[UA_TYPES_BYTE], 640 * 480 * 3)};
     Server::addMethodNode("UpdateStatus", "Update the status of the device", updateStatus,
                           status_inputs, null_args, device_status_type_id);
     // Object
@@ -150,8 +153,8 @@ int main(int argc, char *argv[])
                                   tmp, device_status_type_id, vision_server_id);
     }
 
-    // thread t1(changeImg);
-    // t1.detach();
+    thread t1(changeImg);
+    t1.detach();
     // ############################### Run ###############################
     Server::run();
 }

@@ -27,38 +27,26 @@ namespace ua
  */
 class Argument
 {
-    UA_Argument __argument;           //!< Argument
-    std::vector<UA_UInt32> __dim_arr; //!< Dimension array of variant
+    UA_Argument __argument; //!< UA_Argument
+    UA_UInt32 __size;       //!< 数组大小
 
 public:
-    Argument(const Argument &arg) : __dim_arr(arg.__dim_arr) { UA_Argument_copy(&arg.__argument, &__argument); }
-    Argument(Argument &&arg) : __dim_arr(arg.__dim_arr) { UA_Argument_copy(&arg.__argument, &__argument); }
+    Argument(const Argument &arg) : __size(arg.__size) { UA_Argument_copy(&arg.__argument, &__argument); }
+    Argument(Argument &&arg) : __size(arg.__size) { UA_Argument_copy(&arg.__argument, &__argument); }
     ~Argument() = default;
 
     /**
-     * @brief Construct a new Argument object
+     * @brief 构造参数
      *
-     * @param name Name of the argument
-     * @param description Description of the argument
-     * @param ua_types UA_TYPES_xxx
-     * @param dimension_array Dimension array of variant
+     * @param name 参数名
+     * @param description 参数描述
+     * @param type UA_DataType
+     * @param size 数组大小 (default: 0)
      */
-    Argument(std::string name, std::string description, int ua_types,
-             const std::vector<UA_UInt32> &dimension_array = std::vector<UA_UInt32>());
+    Argument(std::string name, std::string description, const UA_DataType *type, UA_UInt32 size = 0);
 
-    /**
-     * @brief Get argument
-     * 
-     * @return UA_Argument 
-     */
-    UA_Argument getArgument() const { return __argument; }
-    
-    /**
-     * @brief Get dimension
-     * 
-     * @return std::size_t 
-     */
-    inline std::size_t getDimension() const { return __dim_arr.size(); }
+    //! 获取 UA_Argument
+    const UA_Argument &get() const { return __argument; }
 };
 
 const std::vector<Argument> null_args; //!< Null argument

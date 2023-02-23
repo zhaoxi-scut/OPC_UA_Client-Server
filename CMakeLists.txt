@@ -58,8 +58,22 @@ option(BUILD_DOCS "Create build rules for Asmpro Documentation" OFF)
 
 add_subdirectory(modules)
 
-add_executable(server src/ua_server.cpp)
-add_executable(client src/ua_client.cpp)
+find_package(OpenCV REQUIRED)
 
-target_link_libraries(server asmpro_opcua_cs)
-target_link_libraries(client asmpro_opcua_cs)
+add_executable(
+    server
+    src/ua_server.cpp
+)
+add_executable(
+    client
+    src/ua_client.cpp
+)
+
+target_link_libraries(
+    server
+    PRIVATE asmpro_opcua_cs ${OpenCV_LIBS}
+)
+target_link_libraries(
+    client
+    PRIVATE asmpro_opcua_cs ${OpenCV_LIBS}
+)

@@ -23,144 +23,140 @@ namespace ua
 //! @{
 
 /**
- * @brief Variable based on OPC UA protocal
+ * @brief 基于 OPC UA 协议的变量类型
+ * @note 通过 get() 方法可直接从 VariableType 获取其默认值
  */
-class Variable
-{
-    UA_Variant __variant;             //!< Variant
-    std::vector<UA_UInt32> __dim_arr; //!< Dimension array of variant
-    UA_Byte __access_level;           //!< Access level of this variable in server or client
-
-public:
-    Variable() { UA_Variant_init(&__variant); }
-
-    ~Variable() = default;
-
-    Variable(const Variable &v) : __dim_arr(v.__dim_arr), __access_level(v.__access_level)
-    {
-        UA_Variant_copy(&v.__variant, &__variant);
-    }
-
-    Variable(Variable &&v) : __dim_arr(v.__dim_arr), __access_level(v.__access_level)
-    {
-        UA_Variant_copy(&v.__variant, &__variant);
-    }
-
-    void operator=(const Variable &v)
-    {
-        __dim_arr = v.__dim_arr;
-        __access_level = v.__access_level;
-        UA_Variant_copy(&v.__variant, &__variant);
-    }
-
-    /**
-     * @brief Construct a new Variable object
-     *
-     * @tparam _InterType built-in type
-     * @param val Built-in type data
-     * @param access_level Accessibility of node data
-     */
-    template <typename _InterType>
-    Variable(const _InterType &val, UA_Byte access_level = READ | WRITE)
-        : __access_level(access_level)
-    {
-        UA_Variant_init(&__variant);
-        UA_Variant_setScalar(&__variant, const_cast<_InterType *>(&val), &getUaType<_InterType>());
-    }
-
-    /**
-     * @brief Construct a new Variable object
-     *
-     * @param str string data
-     * @param access_level Accessibility of node data
-     */
-    Variable(const char *str, UA_Byte access_level = READ | WRITE)
-        : __access_level(access_level)
-    {
-        UA_Variant_init(&__variant);
-        UA_String ua_str = UA_STRING(const_cast<char *>(str));
-        UA_Variant_setScalarCopy(&__variant, &ua_str, &UA_TYPES[UA_TYPES_STRING]);
-    }
-
-    /**
-     * @brief Generating variable from raw data
-     *
-     * @param data Raw data
-     * @param ua_types UA_TYPES_xxx
-     * @param access_level Accessibility of node data
-     * @param dimension_array Dimension array of variant
-     */
-    Variable(void *data, UA_UInt32 ua_types, UA_Byte access_level,
-             std::vector<UA_UInt32> &dimension_array);
-
-    //!< Get pointer of variant
-    inline const UA_Variant &getVariant() const { return __variant; }
-    //!< Get dimension
-    inline std::size_t getDimension() const { return __dim_arr.size(); }
-    //!< Get access level
-    inline UA_Byte getAccess() const { return __access_level; }
-};
-
-//!< Variable type based on OPC UA protocal
 class VariableType
 {
-    UA_Variant __init_variant;        //!< The initial value
-    std::vector<UA_UInt32> __dim_arr; //!< Dimension array of variant
+    UA_Variant __init_val; //!< 默认值
+    UA_UInt32 __size;      //!< 数组大小
 
 public:
-    /**
-     * @brief Construct a new Variable Type object
-     */
-    VariableType()
+    VariableType() { UA_Variant_init(&__init_val); }
+
+    template <typename _Tp>
+    VariableType(const _Tp &val, std::size_t size = 0) : __size(size)
     {
-        UA_Variant_init(&__init_variant);
+        UA_Variant_init(&__init_val);
+        initVal(&val, &getUaType<_Tp>());
+    }
+
+    VariableType(const void *val, const UA_DataType *type, std::size_t size = 0) : __size(size)
+    {
+        UA_Variant_init(&__init_val);
+        initVal(val, type);
+    }
+
+    VariableType(const char *str) : __size(0)
+    {
+        UA_Variant_init(&__init_val);
+        UA_String ua_str = UA_STRING(const_cast<char *>(str));
+        initVal(&ua_str, &UA_TYPES[UA_TYPES_STRING]);
     }
 
     ~VariableType() = default;
 
+    //!< 获取 VariableType 的默认 UA_Variant 值
+    inline const UA_Variant &get() const { return __init_val; }
+    //!< 判空
+    inline bool empty() { return UA_Variant_isEmpty(&__init_val); }
+
+private:
     /**
-     * @brief Construct a new Variable Type object
-     *
-     * @param vt Another instance of variable type
+     * @brief 初始化 UA_Variant
+     * @note 在此函数调用之前，必须设置好 __size 成员变量
+     * 
+     * @param data 原始数据
+     * @param type 单数据类型
      */
-    VariableType(const VariableType &vt) : __dim_arr(vt.__dim_arr)
+    void initVal(const void *data, const UA_DataType *type)
     {
-        UA_Variant_copy(&vt.__init_variant, &__init_variant);
+        if (__size == 0)
+        {
+            UA_Variant_setScalarCopy(&__init_val, data, type);
+            __init_val.arrayDimensionsSize = 0;
+            __init_val.arrayDimensions = nullptr;
+        }
+        else
+        {
+            UA_Variant_setArrayCopy(&__init_val, data, __size, type);
+            __init_val.arrayDimensionsSize = 1;
+            __init_val.arrayDimensions = &__size;
+        }
+    }
+};
+
+/**
+ * @brief 基于 OPC UA 协议的变量
+ * @note 可直接从 VariableType 构造一个 Variable，也可通过与 VariableType
+ *       同样的构造方式构造 Variable，Variable 的构造方式均为 
+ */
+class Variable
+{
+    UA_Variant __val; //!< UA_Variant
+    UA_UInt32 __size; //!< 数组大小
+
+public:
+    Variable() { UA_Variant_init(&__val); }
+
+    ~Variable() = default;
+
+    explicit Variable(const VariableType &val_type)
+    {
+        UA_Variant_init(&__val);
+        const UA_Variant &val = val_type.get();
+        __size = val.arrayLength;
+        initVal(val.data, val.type);
     }
 
-    /**
-     * @brief Construct a new Variable Type object
-     *
-     * @param vt Another instance of variable type
-     */
-    VariableType(VariableType &&vt) : __dim_arr(vt.__dim_arr)
+    template <typename _Tp>
+    Variable(const _Tp &val, std::size_t size = 0) : __size(size)
     {
-        UA_Variant_copy(&vt.__init_variant, &__init_variant);
+        UA_Variant_init(&__val);
+        initVal(&val, &getUaType<_Tp>());
     }
 
-    /**
-     * @brief operator =
-     *
-     * @param vt Another instance of variable type
-     */
-    void operator=(const VariableType &vt)
+    Variable(const void *val, const UA_DataType *type, std::size_t size = 0) : __size(size)
     {
-        __dim_arr = vt.__dim_arr;
-        UA_Variant_copy(&vt.__init_variant, &__init_variant);
+        UA_Variant_init(&__val);
+        initVal(val, type);
     }
 
-    /**
-     * @brief Construct a new Variable Type object
-     *
-     * @param nameId Name of variable type nodeId
-     * @param variable Variable
-     */
-    explicit VariableType(Variable &variable);
+    Variable(const char *str)
+    {
+        UA_Variant_init(&__val);
+        UA_String ua_str = UA_STRING(const_cast<char *>(str));
+        initVal(&ua_str, &UA_TYPES[UA_TYPES_STRING]);
+    }
 
-    //!< Get pointer of default variant
-    inline const UA_Variant &getDefault() const { return __init_variant; }
-    //!< Get dimension
-    inline std::size_t getDimension() const { return __dim_arr.size(); }
+    //!< 获取 UA_Variant 值
+    inline const UA_Variant &get() const { return __val; }
+    //!< 判空
+    inline bool empty() { return UA_Variant_isEmpty(&__val); }
+
+private:
+    /**
+     * @brief 初始化 UA_Variant
+     * @note 在此函数调用之前，必须设置好 __size 成员变量
+     * 
+     * @param data 原始数据
+     * @param type 单数据类型
+     */
+    void initVal(const void *data, const UA_DataType *type)
+    {
+        if (__size == 0)
+        {
+            UA_Variant_setScalarCopy(&__val, data, type);
+            __val.arrayDimensionsSize = 0;
+            __val.arrayDimensions = nullptr;
+        }
+        else
+        {
+            UA_Variant_setArrayCopy(&__val, data, __size, type);
+            __val.arrayDimensionsSize = 1;
+            __val.arrayDimensions = &__size;
+        }
+    }
 };
 
 //! @} opcua_cs_variable

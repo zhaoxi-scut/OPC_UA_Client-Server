@@ -14,7 +14,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "asmpro/opcua_cs.hpp"
+#include "asmpro/opcua_cs/client.hpp"
 
 using namespace std;
 using namespace cv;
@@ -23,11 +23,10 @@ using namespace ua;
 void imageChange(UA_Client *client, UA_UInt32 subId, void *subContext, UA_UInt32 monId,
                  void *monContext, UA_DataValue *value)
 {
-    vector<UA_UInt32> dimensions(value->value.arrayDimensionsSize);
-    for (size_t i = 0; i < value->value.arrayDimensionsSize; ++i)
-        dimensions[i] = value->value.arrayDimensions[i];
-    Variable img_data(value->value.data, UA_TYPES_BYTE, READ | WRITE, dimensions);
-    Mat img = convertImg(img_data);
+    UA_Variant v = value->value;
+    if (v.arrayLength != 640 * 480 * 3)
+        throw v.arrayLength;
+    Mat img(Size(640, 480), CV_8UC3, v.data);
     imshow("img", img);
     waitKey(1);
 }

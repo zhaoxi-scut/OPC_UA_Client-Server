@@ -15,4 +15,3 @@
 
 #include "opcua_cs/client.hpp"
 #include "opcua_cs/server.hpp"
-#include "opcua_cs/convert.h"
