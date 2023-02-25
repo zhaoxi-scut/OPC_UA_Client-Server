@@ -14,11 +14,11 @@
 using namespace std;
 using namespace ua;
 
-Argument::Argument(string name, string description, const UA_DataType *type, UA_UInt32 size) : __size(size)
+Argument::Argument(const string &name, const string &description, const UA_DataType *type, UA_UInt32 size) : __size(size)
 {
     UA_Argument_init(&__argument);
-    __argument.name = UA_STRING(to_c(name));
-    __argument.description = UA_LOCALIZEDTEXT(en_US, to_c(description));
+    __argument.name = UA_STRING_ALLOC(name.c_str());
+    __argument.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.c_str());
     __argument.dataType = type->typeId;
     if (__size == 0)
     {

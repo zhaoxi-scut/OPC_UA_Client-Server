@@ -23,7 +23,7 @@ namespace ua
 //! @{
 
 /**
- * @brief Method argument based on OPC UA protocol
+ * @brief 基于 OPC UA 协议的方法参数
  */
 class Argument
 {
@@ -31,8 +31,7 @@ class Argument
     UA_UInt32 __size;       //!< 数组大小
 
 public:
-    Argument(const Argument &arg) : __size(arg.__size) { UA_Argument_copy(&arg.__argument, &__argument); }
-    Argument(Argument &&arg) : __size(arg.__size) { UA_Argument_copy(&arg.__argument, &__argument); }
+    Argument() = default;
     ~Argument() = default;
 
     /**
@@ -43,7 +42,7 @@ public:
      * @param type UA_DataType
      * @param size 数组大小 (default: 0)
      */
-    Argument(std::string name, std::string description, const UA_DataType *type, UA_UInt32 size = 0);
+    Argument(const std::string &name, const std::string &description, const UA_DataType *type, UA_UInt32 size = 0);
 
     //! 获取 UA_Argument
     const UA_Argument &get() const { return __argument; }

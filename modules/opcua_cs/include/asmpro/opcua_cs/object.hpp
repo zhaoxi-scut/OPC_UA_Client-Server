@@ -29,7 +29,8 @@ namespace ua
  */
 class ObjectType
 {
-    std::unordered_map<std::string, Variable> __init_name_var; //!< 哈希表 [浏览信息名: 变量数据]
+    //! 浏览信息名 : [变量类型 ID, 变量] 映射表
+    std::unordered_map<std::string, std::pair<UA_NodeId, Variable>> __init_val;
 
 public:
     ObjectType() = default;
@@ -39,15 +40,17 @@ public:
      * @brief 为变量类型添加初始变量
      *
      * @param browse_name 变量的浏览信息名
-     * @param default_var 需要添加至对象的默认变量数据
+     * @param default_val 需要添加至对象的默认变量数据
+     * @param val_type 默认变量数据的变量类型 (default: ns=0, s=UA_NS0ID_BASEDATAVARIABLETYPE)
      */
-    inline void add(const std::string &browse_name, const Variable &default_var)
+    inline void add(const std::string &browse_name, const Variable &default_val,
+                    UA_NodeId val_type = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE))
     {
-        __init_name_var[browse_name] = default_var;
+        __init_val[browse_name] = {val_type, default_val.clone()};
     }
 
-    //! 获取哈希表 [浏览信息名: 变量数据]
-    inline const auto &get() const { return __init_name_var; }
+    //! 获取 浏览信息名 : [变量类型 ID, 变量] 映射表
+    inline const auto &get() const { return __init_val; }
 };
 
 /**
@@ -58,32 +61,31 @@ public:
  */
 class Object
 {
-    std::unordered_map<std::string, Variable> __name_var;
+    //! 浏览信息名 : [变量类型 ID, 变量] 映射表
+    std::unordered_map<std::string, std::pair<UA_NodeId, Variable>> __val;
 
 public:
-    /**
-     * @brief 创建新的对象
-     *
-     * @param obj_type 对象类型数据
-     */
-    explicit Object(const ObjectType &obj_type) : __name_var(obj_type.get()) {}
-
+    Object() = default;
     ~Object() = default;
+
+    explicit Object(const ObjectType &obj_type) : __val(obj_type.get()) {}
 
     /**
      * @brief 为对象添加变量
      * @note 如果该对象所代表的对象类型中不存在要添加的变量名，则添加失败
      *
      * @param browse_name 变量的浏览信息名
-     * @param variable 需要添加至对象的变量数据
+     * @param val 需要添加至对象的变量数据
+     * @param val_type 默认变量数据的变量类型 (default: ns=0, s=UA_NS0ID_BASEDATAVARIABLETYPE)
      */
-    inline void add(const std::string &browse_name, const Variable &variable)
+    inline void add(const std::string &browse_name, const Variable &val,
+                    UA_NodeId val_type = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE))
     {
-        __name_var[browse_name] = variable;
+        __val[browse_name] = {val_type, val.clone()};
     }
 
     //!< 获取浏览信息名及对应的变量数据
-    inline const auto &get() const { return __name_var; }
+    inline const auto &get() const { return __val; }
 };
 
 /**

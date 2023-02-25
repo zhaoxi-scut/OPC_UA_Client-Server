@@ -33,9 +33,10 @@ class VariableType
 
 public:
     VariableType() { UA_Variant_init(&__init_val); }
+    ~VariableType() = default;
 
     template <typename _Tp>
-    VariableType(const _Tp &val, std::size_t size = 0) : __size(size)
+    VariableType(const _Tp &val) : __size(0)
     {
         UA_Variant_init(&__init_val);
         initVal(&val, &getUaType<_Tp>());
@@ -54,7 +55,14 @@ public:
         initVal(&ua_str, &UA_TYPES[UA_TYPES_STRING]);
     }
 
-    ~VariableType() = default;
+    //! clone
+    VariableType clone() const
+    {
+        VariableType retval;
+        UA_Variant_copy(&__init_val, &retval.__init_val);
+        retval.__size = __size;
+        return retval;
+    }
 
     //!< 获取 VariableType 的默认 UA_Variant 值
     inline const UA_Variant &get() const { return __init_val; }
@@ -109,8 +117,8 @@ public:
         initVal(val.data, val.type);
     }
 
-    template <typename _Tp>
-    Variable(const _Tp &val, std::size_t size = 0) : __size(size)
+    template <typename _Tp, typename Enable = std::enable_if_t<!std::is_same_v<_Tp, VariableType>>>
+    Variable(const _Tp &val) : __size(0)
     {
         UA_Variant_init(&__val);
         initVal(&val, &getUaType<_Tp>());
@@ -122,16 +130,25 @@ public:
         initVal(val, type);
     }
 
-    Variable(const char *str)
+    Variable(const char *str) : __size(0)
     {
         UA_Variant_init(&__val);
         UA_String ua_str = UA_STRING(const_cast<char *>(str));
         initVal(&ua_str, &UA_TYPES[UA_TYPES_STRING]);
     }
 
-    //!< 获取 UA_Variant 值
+    //! clone
+    Variable clone() const
+    {
+        Variable retval;
+        UA_Variant_copy(&__val, &retval.__val);
+        retval.__size = __size;
+        return retval;
+    }
+
+    //! 获取 UA_Variant 值
     inline const UA_Variant &get() const { return __val; }
-    //!< 判空
+    //! 判空
     inline bool empty() { return UA_Variant_isEmpty(&__val); }
 
 private:

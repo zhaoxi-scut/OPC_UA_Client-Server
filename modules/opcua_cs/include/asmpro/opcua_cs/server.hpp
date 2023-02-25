@@ -219,10 +219,12 @@ public:
      * @param browse_name 对象类型的浏览信息名
      * @param description 对象类型的描述
      * @param data 对象类型数据信息
+     * @param parent_id 父对象节点 ID (default: )
      * @return 添加的节点 ID
      */
-    static UA_NodeId addObjectTypeNode(const std::string &browse_name, const std::string &description,
-                                       const ObjectType &data);
+    static UA_NodeId addObjectTypeNode(const std::string &browse_name,
+                                       const std::string &description, const ObjectType &data,
+                                       UA_NodeId parent_id = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE));
 
     /**
      * @brief 添加事件类型节点至 OPC UA 服务器中
