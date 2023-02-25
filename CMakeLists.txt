@@ -25,7 +25,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 # ----------------------------------------------------------------------------
 include(cmake/AsmproModule.cmake)
 
-option(BUILD_SHARED_LIBS "build shared libraries" OFF)
+option(BUILD_SHARED_LIBS "build shared libraries" ON)
 
 # build test option
 option(BUILD_TESTS "Build accuracy & regression tests" OFF)
@@ -68,6 +68,14 @@ add_executable(
     client
     src/ua_client.cpp
 )
+add_executable(
+    delaycal_server
+    src/delaycal_server.cpp
+)
+add_executable(
+    delaycal_client
+    src/delaycal_client.cpp
+)
 
 target_link_libraries(
     server
@@ -76,4 +84,12 @@ target_link_libraries(
 target_link_libraries(
     client
     PRIVATE asmpro_opcua_cs ${OpenCV_LIBS}
+)
+target_link_libraries(
+    delaycal_server
+    PRIVATE asmpro_opcua_cs
+)
+target_link_libraries(
+    delaycal_client
+    PRIVATE asmpro_opcua_cs
 )

@@ -100,7 +100,11 @@ UA_Boolean Client::call(const UA_NodeId &node_id, const std::vector<Variable> &i
                                           input_variants.size(), input_variants.data(),
                                           &output_size, &output_variants);
     if (retval != UA_STATUSCODE_GOOD)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "Failed to call the method: %s \033[31m(ns=%u,s=%d)\033[0m",
+                     UA_StatusCode_name(retval), node_id.namespaceIndex, node_id.identifier.numeric);
         return UA_FALSE;
+    }    
     //!< Process the output variants
     outputs.reserve(output_size);
     for (size_t i = 0; i < output_size; ++i)

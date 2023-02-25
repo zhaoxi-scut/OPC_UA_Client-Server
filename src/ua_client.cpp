@@ -1,12 +1,12 @@
 /**
  * @file ua_client.cpp
  * @author zhaoxi (535394140@qq.com)
- * @brief
+ * @brief 
  * @version 1.0
- * @date 2023-01-28
- *
- * @copyright Copyright SCUT RobotLab(c) 2023
- *
+ * @date 2023-02-25
+ * 
+ * @copyright Copyright (c) 2023, zhaoxi
+ * 
  */
 
 #include <iostream>

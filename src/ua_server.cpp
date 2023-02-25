@@ -40,16 +40,20 @@ inline void onStop(int sig) { is_running = false; }
 void changeImg()
 {
     RNG rng(getTickCount());
+    uint8_t gain = 0;
     while (is_running)
     {
-        this_thread::sleep_for(chrono::milliseconds(500));
+        this_thread::sleep_for(chrono::milliseconds(1000));
         Mat img(Size(640, 480), CV_8UC3, Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)));
-        Variable variable(img.data, &UA_TYPES[UA_TYPES_BYTE], img.cols * img.rows * img.channels());
-        UA_NodeId node_id = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-        node_id = Server::findNodeId(node_id, 1, "VisionServer");
-        node_id = Server::findNodeId(node_id, 1, "DeviceStatus[1]");
-        node_id = Server::findNodeId(node_id, 1, "GrabImage");
-        Server::writeVariable(node_id, variable);
+        Variable img_val(img.data, &UA_TYPES[UA_TYPES_BYTE], img.cols * img.rows * img.channels());
+        gain++;
+        UA_NodeId objects_folder_id = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+        UA_NodeId vision_server_id = Server::findNodeId(objects_folder_id, 1, "VisionServer");
+        UA_NodeId camera1_id = Server::findNodeId(vision_server_id, 1, "Camera[1]");
+        UA_NodeId image_id = Server::findNodeId(camera1_id, 1, "Image");
+        UA_NodeId gain_id = Server::findNodeId(camera1_id, 1, "Gain");
+        Server::writeVariable(image_id, img_val);
+        Server::writeVariable(gain_id, static_cast<double>(gain));
     }
 
     exit(0);
@@ -118,7 +122,7 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < light_controllers.size(); ++i)
         Server::addObjectNode("LightController[" + to_string(i) + "]", "LightController[" + to_string(i) + "]",
                               light_controllers[i], light_controller_type_id, vision_server_id);
-    // thread t1(changeImg);
-    // t1.detach();
+    thread t1(changeImg);
+    t1.detach();
     Server::run();
 }
