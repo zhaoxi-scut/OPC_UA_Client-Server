@@ -9,7 +9,6 @@ project(
 # Asmpro compile configure
 # ----------------------------------------------------------------------------
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC")
-set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build)
 set(CMAKE_INSTALL_PREFIX "/opt/asmpro")

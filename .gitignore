@@ -2,6 +2,7 @@
 .vscode
 .vs
 *.json
+CMakeLists.txt.user
 
 # Compiling files
 *build*
