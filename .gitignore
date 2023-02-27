@@ -4,7 +4,7 @@
 *.json
 
 # Compiling files
-*build
+*build*
 out
 
 # Image files

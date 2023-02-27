@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
     client.connect("opc.tcp://localhost:4840");
     UA_NodeId node_id = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
     node_id = client.findNodeId(node_id, 1, "VisionServer");
-    node_id = client.findNodeId(node_id, 1, "DeviceStatus[1]");
-    node_id = client.findNodeId(node_id, 1, "GrabImage");
+    node_id = client.findNodeId(node_id, 1, "Camera[1]");
+    node_id = client.findNodeId(node_id, 1, "Image");
 
     UA_UInt32 sub_id = client.createSubscription();
     client.createVariableMonitor(sub_id, node_id, imageChange);
