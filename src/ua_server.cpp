@@ -25,6 +25,14 @@ UA_StatusCode setExposure(UA_Server *server, const UA_NodeId *sessionId, void *s
                           void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                           const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 1)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetExposure.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId exposure_id = Server::findNodeId(*objectId, 1, "Exposure");
+    Variable val = Variable(input->data, input->type, input->arrayLength);
+    Server::writeVariable(exposure_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -32,6 +40,14 @@ UA_StatusCode setGain(UA_Server *server, const UA_NodeId *sessionId, void *sessi
                       void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                       const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 1)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetGain.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId gain_id = Server::findNodeId(*objectId, 1, "Gain");
+    Variable val = Variable(input->data, input->type, input->arrayLength);
+    Server::writeVariable(gain_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -39,6 +55,14 @@ UA_StatusCode setRedGain(UA_Server *server, const UA_NodeId *sessionId, void *se
                          void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                          const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 1)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetRedGain.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId r_gain_id = Server::findNodeId(*objectId, 1, "RedGain");
+    Variable val = Variable(input->data, input->type, input->arrayLength);
+    Server::writeVariable(r_gain_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -46,6 +70,14 @@ UA_StatusCode setGreenGain(UA_Server *server, const UA_NodeId *sessionId, void *
                            void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                            const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 1)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetGreenGain.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId g_gain_id = Server::findNodeId(*objectId, 1, "GreenGain");
+    Variable val = Variable(input->data, input->type, input->arrayLength);
+    Server::writeVariable(g_gain_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -53,6 +85,14 @@ UA_StatusCode setBlueGain(UA_Server *server, const UA_NodeId *sessionId, void *s
                           void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                           const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 1)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetBlueGain.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId b_gain_id = Server::findNodeId(*objectId, 1, "BlueGain");
+    Variable val = Variable(input->data, input->type, input->arrayLength);
+    Server::writeVariable(b_gain_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -60,6 +100,24 @@ UA_StatusCode setLuminance(UA_Server *server, const UA_NodeId *sessionId, void *
                            void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                            const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 2)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetLuminance.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId lum_id = Server::findNodeId(*objectId, 1, "Luminance");
+    if (UA_NodeId_isNull(&lum_id))
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Null node id in method: SetLuminance.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_UInt32 channel = *reinterpret_cast<UA_UInt32 *>(input[0].data);
+    UA_Byte luminance = *reinterpret_cast<UA_Byte *>(input[1].data);
+    UA_Variant val;
+    UA_Server_readValue(server, lum_id, &val);
+    UA_Byte *data = reinterpret_cast<UA_Byte *>(val.data);
+    data[channel] = luminance;
+    Server::writeVariable(lum_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -67,6 +125,24 @@ UA_StatusCode setDelay(UA_Server *server, const UA_NodeId *sessionId, void *sess
                        void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize,
                        const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
+    if (inputSize != 2)
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Error inputSize in method: SetDelay.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_NodeId del_id = Server::findNodeId(*objectId, 1, "Delay");
+    if (UA_NodeId_isNull(&del_id))
+    {
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Null node id in method: SetDelay.");
+        return UA_STATUSCODE_BAD;
+    }
+    UA_UInt32 channel = *reinterpret_cast<UA_UInt32 *>(input[0].data);
+    UA_UInt16 delay = *reinterpret_cast<UA_UInt16 *>(input[1].data);
+    UA_Variant val;
+    UA_Server_readValue(server, del_id, &val);
+    UA_UInt16 *data = reinterpret_cast<UA_UInt16 *>(val.data);
+    data[channel] = delay;
+    UA_Server_writeValue(server, del_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -147,7 +223,7 @@ int main(int argc, char *argv[])
     // LightController ObjectType
     ObjectType light_controller;
     vector<UA_Byte> luminance = {0, 0, 0, 0};
-    vector<UA_Byte> delay = {1, 1, 1, 1};
+    vector<UA_UInt16> delay = {1U, 1U, 1U, 1U};
     light_controller.add("Luminance", Variable(luminance.data(), &UA_TYPES[UA_TYPES_BYTE], luminance.size()));
     light_controller.add("Delay", Variable(delay.data(), &UA_TYPES[UA_TYPES_UINT16], delay.size()));
     UA_NodeId light_controller_id = Server::addObjectTypeNode("LightControllerType", "Type of LightController",

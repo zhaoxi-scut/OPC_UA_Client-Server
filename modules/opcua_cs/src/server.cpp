@@ -310,7 +310,8 @@ UA_NodeId Server::addObjectNode(const string &browse_name, const string &descrip
     {
         auto var_node_id = findNodeId(node_id, 1, name);
         //!< Set variable
-        if (!writeVariable(var_node_id, variable.second))
+        auto write_static = UA_Server_writeValue(__server, var_node_id, variable.second.get());
+        if (write_static != UA_STATUSCODE_GOOD)
         {
             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
                          "Function addObject, write variable: %s", UA_StatusCode_name(retval));
