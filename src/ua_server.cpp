@@ -165,13 +165,13 @@ inline void onStop(int sig) { is_running = false; }
 void changeImg()
 {
     RNG rng(getTickCount());
-    uint8_t gain = 0;
+    double gain = 0;
     while (is_running)
     {
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(500));
         Mat img(Size(640, 480), CV_8UC3, Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)));
         Variable img_val(img.data, &UA_TYPES[UA_TYPES_BYTE], img.cols * img.rows * img.channels());
-        gain++;
+        gain = gain > 3 ? 0 : gain + 0.01;
         UA_NodeId objects_folder_id = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
         UA_NodeId vision_server_id = Server::findNodeId(objects_folder_id, 1, "VisionServer");
         UA_NodeId camera1_id = Server::findNodeId(vision_server_id, 1, "Camera[1]");
