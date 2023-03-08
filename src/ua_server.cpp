@@ -31,8 +31,7 @@ UA_StatusCode setExposure(UA_Server *server, const UA_NodeId *sessionId, void *s
         return UA_STATUSCODE_BAD;
     }
     UA_NodeId exposure_id = Server::findNodeId(*objectId, 1, "Exposure");
-    Variable val = Variable(input->data, input->type, input->arrayLength);
-    Server::writeVariable(exposure_id, val);
+    UA_Server_writeValue(server, exposure_id, *input);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -46,8 +45,7 @@ UA_StatusCode setGain(UA_Server *server, const UA_NodeId *sessionId, void *sessi
         return UA_STATUSCODE_BAD;
     }
     UA_NodeId gain_id = Server::findNodeId(*objectId, 1, "Gain");
-    Variable val = Variable(input->data, input->type, input->arrayLength);
-    Server::writeVariable(gain_id, val);
+    UA_Server_writeValue(server, gain_id, *input);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -61,8 +59,7 @@ UA_StatusCode setRedGain(UA_Server *server, const UA_NodeId *sessionId, void *se
         return UA_STATUSCODE_BAD;
     }
     UA_NodeId r_gain_id = Server::findNodeId(*objectId, 1, "RedGain");
-    Variable val = Variable(input->data, input->type, input->arrayLength);
-    Server::writeVariable(r_gain_id, val);
+    UA_Server_writeValue(server, r_gain_id, *input);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -76,8 +73,7 @@ UA_StatusCode setGreenGain(UA_Server *server, const UA_NodeId *sessionId, void *
         return UA_STATUSCODE_BAD;
     }
     UA_NodeId g_gain_id = Server::findNodeId(*objectId, 1, "GreenGain");
-    Variable val = Variable(input->data, input->type, input->arrayLength);
-    Server::writeVariable(g_gain_id, val);
+    UA_Server_writeValue(server, g_gain_id, *input);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -92,7 +88,7 @@ UA_StatusCode setBlueGain(UA_Server *server, const UA_NodeId *sessionId, void *s
     }
     UA_NodeId b_gain_id = Server::findNodeId(*objectId, 1, "BlueGain");
     Variable val = Variable(input->data, input->type, input->arrayLength);
-    Server::writeVariable(b_gain_id, val);
+    UA_Server_writeValue(server, b_gain_id, *input);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -117,7 +113,7 @@ UA_StatusCode setLuminance(UA_Server *server, const UA_NodeId *sessionId, void *
     UA_Server_readValue(server, lum_id, &val);
     UA_Byte *data = reinterpret_cast<UA_Byte *>(val.data);
     data[channel] = luminance;
-    Server::writeVariable(lum_id, val);
+    UA_Server_writeValue(server, lum_id, val);
     return UA_STATUSCODE_GOOD;
 }
 
