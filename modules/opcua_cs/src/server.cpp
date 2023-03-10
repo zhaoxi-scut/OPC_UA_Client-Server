@@ -128,7 +128,7 @@ UA_NodeId Server::addVariableNode(const string &browse_name, const string &descr
     return node_id;
 }
 
-UA_Boolean Server::writeVariable(const UA_NodeId &node_id, Variable data)
+UA_Boolean Server::writeVariable(const UA_NodeId &node_id, const Variable &data)
 {
     SERVER_INIT_ASSERT();
     auto status = UA_Server_writeValue(__server, node_id, data.get());

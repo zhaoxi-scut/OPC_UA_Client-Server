@@ -140,7 +140,7 @@ public:
      * @param data 变量数据信息
      * @return 是否成功写入变量节点
      */
-    static UA_Boolean writeVariable(const UA_NodeId &node_id, Variable data);
+    static UA_Boolean writeVariable(const UA_NodeId &node_id, const Variable &data);
 
     /**
      * @brief 从服务器中读取指定的变量节点
@@ -283,9 +283,6 @@ public:
      * @return 是否成功触发事件
      */
     static UA_Boolean triggerEvent(const UA_NodeId &node_id, const UA_NodeId &origin_id = UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER));
-
-    //! 获取服务器指针
-    static inline UA_Server *get() { return __server; }
 
 private:
     /**

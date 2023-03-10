@@ -40,9 +40,6 @@ public:
         UA_Client_delete(__client);
     }
 
-    //! 获取客户端指针
-    inline UA_Client *get() { return __client; }
-
     /**
      * @brief 断开服务器 - 客户端连接
      */
@@ -77,6 +74,24 @@ public:
      * @return 目标节点 ID
      */
     UA_NodeId findNodeId(const UA_NodeId &origin_id, const UA_UInt32 target_ns, const std::string &target_name);
+
+    /**
+     * @brief 把值写入服务器中的变量节点
+     * 
+     * @param node_id 变量节点 ID
+     * @param data 变量数据信息
+     * @return 是否成功完成当前操作的状态码 
+     */
+    UA_Boolean writeVariable(const UA_NodeId &node_id, const Variable &data);
+
+    /**
+     * @brief 从服务器中读取指定的变量节点
+     * @note 返回值的变量类型为可读可写权限
+     *
+     * @param node_id 变量节点 ID
+     * @return 指定的变量
+     */
+    Variable readVariable(const UA_NodeId &node_id);
 
     /**
      * @brief 在客户端调用服务器中的指定方法
