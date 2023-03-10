@@ -284,6 +284,9 @@ public:
      */
     static UA_Boolean triggerEvent(const UA_NodeId &node_id, const UA_NodeId &origin_id = UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER));
 
+    //! 获取服务器指针
+    static inline UA_Server *get() { return __server; }
+
 private:
     /**
      * @brief 在添加变量节点之前配置变量属性

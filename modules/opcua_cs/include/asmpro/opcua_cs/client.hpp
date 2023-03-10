@@ -40,6 +40,9 @@ public:
         UA_Client_delete(__client);
     }
 
+    //! 获取客户端指针
+    inline UA_Client *get() { return __client; }
+
     /**
      * @brief 断开服务器 - 客户端连接
      */
