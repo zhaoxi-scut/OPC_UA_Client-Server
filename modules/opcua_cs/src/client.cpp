@@ -59,31 +59,6 @@ UA_NodeId Client::findNodeId(const UA_NodeId &origin_id, const UA_UInt32 target_
     return UA_NODEID_NULL;
 }
 
-UA_Boolean Client::writeVariable(const UA_NodeId &node_id, const Variable &data)
-{
-    auto status = UA_Client_writeValueAttribute(__client, node_id, &data.get());
-    if (status != UA_STATUSCODE_GOOD)
-    {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "%s", UA_StatusCode_name(status));
-        return UA_FALSE;
-    }
-    return UA_TRUE;
-}
-
-Variable Client::readVariable(const UA_NodeId &node_id)
-{
-    UA_Variant val;
-    UA_Variant_init(&val);
-    UA_StatusCode retval = UA_Client_readValueAttribute(__client, node_id, &val);
-    if (retval != UA_STATUSCODE_GOOD)
-    {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "%s", UA_StatusCode_name(retval));
-        return Variable();
-    }
-    //!< Variant information
-    return Variable(val.data, val.type, val.arrayLength);
-}
-
 UA_Boolean Client::call(const UA_NodeId &node_id, const std::vector<Variable> &inputs,
                         std::vector<Variable> &outputs, const UA_NodeId &parent_id)
 {

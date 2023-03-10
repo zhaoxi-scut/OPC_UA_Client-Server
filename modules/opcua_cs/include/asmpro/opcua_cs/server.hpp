@@ -140,7 +140,7 @@ public:
      * @param data 变量数据信息
      * @return 是否成功写入变量节点
      */
-    static UA_Boolean writeVariable(const UA_NodeId &node_id, const Variable &data);
+    static UA_Boolean writeVariable(const UA_NodeId &node_id, Variable data);
 
     /**
      * @brief 从服务器中读取指定的变量节点
